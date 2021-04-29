@@ -9,12 +9,15 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 def train_model(
     model, train_dataloader, val_dataloader=None, epochs=5, evaluation=False
 ):
-    """Train the BertClassifier model."""
-    print("Start training...\n")
-
+    """Train and validate the BertClassifier model."""
     training_stats = []
     train_loss_set = []
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.to(device)
+    optimizer, scheduler = build_optimizer_scheduler(
+        model=model, epochs=epochs, train_dataloader=train_dataloader
+    )
+    print("Start training...\n")
     for epoch_i in range(epochs):
         # =======================================
         #               Training
@@ -24,41 +27,8 @@ def train_model(
         )
         print("-" * 70)
         t0 = time.time()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         t0_epoch, t0_batch = time.time(), time.time()
         total_loss, batch_loss, batch_counts = 0, 0, 0
-        model.to(device)
-
-        # setting custom optimization parameters for huggingface model and implement a scheduler here as well.
-        param_optimizer = list(model.named_parameters())
-        no_decay = ["bias", "gamma", "beta"]
-        optimizer_grouped_parameters = [
-            {
-                "params": [
-                    p for n, p in param_optimizer if not any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.01,
-            },
-            {
-                "params": [
-                    p for n, p in param_optimizer if any(nd in n for nd in no_decay)
-                ],
-                "weight_decay_rate": 0.0,
-            },
-        ]
-
-        optimizer = AdamW(
-            optimizer_grouped_parameters,
-            lr=5e-5,  # Default learning rate
-            eps=1e-8,  # Default epsilon value
-        )
-
-        total_steps = len(train_dataloader) * epochs
-        scheduler = get_linear_schedule_with_warmup(
-            optimizer,
-            num_warmup_steps=0,  # Default value
-            num_training_steps=total_steps,
-        )
 
         model.train()
 
@@ -101,12 +71,11 @@ def train_model(
         training_time = format_time(time.time() - t0)
 
         print("-" * 70)
+
         # =======================================
         #               Evaluation
         # =======================================
         if evaluation == True:
-            # After the completion of each training epoch, measure the model's performance
-            # on our validation set.
             avg_val_loss, avg_val_accuracy, validation_time = evaluate(
                 model, val_dataloader
             )
@@ -138,9 +107,6 @@ def train_model(
     print("\n")
     print("Training complete!")
     return model, training_stats, train_loss_set
-
-
-import numpy as np
 
 
 def evaluate(model, val_dataloader):
@@ -186,3 +152,39 @@ def evaluate(model, val_dataloader):
     avg_val_accuracy = np.mean(avg_val_accuracy)
     validation_time = format_time(time.time() - t0)
     return avg_val_loss, avg_val_accuracy, validation_time
+
+
+def build_optimizer_scheduler(model, epochs, train_dataloader):
+
+    # setting custom optimization parameters for huggingface model and implement a scheduler here as well.
+    param_optimizer = list(model.named_parameters())
+    no_decay = ["bias", "gamma", "beta"]
+    optimizer_grouped_parameters = [
+        {
+            "params": [
+                p for n, p in param_optimizer if not any(nd in n for nd in no_decay)
+            ],
+            "weight_decay_rate": 0.01,
+        },
+        {
+            "params": [
+                p for n, p in param_optimizer if any(nd in n for nd in no_decay)
+            ],
+            "weight_decay_rate": 0.0,
+        },
+    ]
+
+    optimizer = AdamW(
+        optimizer_grouped_parameters,
+        lr=5e-5,  # Default learning rate
+        eps=1e-8,  # Default epsilon value
+    )
+
+    total_steps = len(train_dataloader) * epochs
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=0,  # Default value
+        num_training_steps=total_steps,
+    )
+
+    return optimizer, scheduler
