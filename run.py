@@ -2,9 +2,11 @@ import torch
 import pandas as pd
 import numpy as np
 from transformers import BertTokenizerFast as BertTokenizer
+from utils.plot_results import plot_results
 from resources.train_val_model import train_model
 from resources.get_data import get_data
 from resources.build_model import BertClassifier
+from resources.test_model import test_model
 from resources.build_dataloader import build_dataloader
 
 
@@ -43,10 +45,24 @@ bert_classifier = BertClassifier(
 #     train and validate model
 ##################################
 
-trained_model, training_states = train_model(
+trained_model, training_stats, train_loss_set = train_model(
     bert_classifier,
     train_dataloader,
     val_dataloader=val_dataloader,
-    epochs=5,
+    epochs=10,
     evaluation=True,
+)
+
+plot_results(training_stats, train_loss_set)
+
+##################################
+#           test model
+##################################
+
+test_model(
+    model=trained_model,
+    test_dataloader=train_dataloader,
+    BERT_MODEL_NAME=BERT_MODEL_NAME,
+    num_labels=num_labels,
+    label_columns=label_columns,
 )
