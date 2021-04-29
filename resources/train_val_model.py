@@ -13,6 +13,7 @@ def train_model(
     print("Start training...\n")
 
     training_stats = []
+    train_loss_set = []
 
     for epoch_i in range(epochs):
         # =======================================
@@ -77,6 +78,7 @@ def train_model(
             )
             batch_loss += loss.item()
             total_loss += loss.item()
+            train_loss_set.append(loss.item())
 
             loss.backward()
 
@@ -135,7 +137,7 @@ def train_model(
 
     print("\n")
     print("Training complete!")
-    return model, training_stats
+    return model, training_stats, train_loss_set
 
 
 import numpy as np
