@@ -2,7 +2,7 @@ import torch
 import pandas as pd
 import numpy as np
 from transformers import BertTokenizerFast as BertTokenizer
-from resources.train_val_loop import train_model
+from resources.train_val_model import train_model
 from resources.get_data import get_data
 from resources.build_model import BertClassifier
 from resources.build_dataloader import build_dataloader
