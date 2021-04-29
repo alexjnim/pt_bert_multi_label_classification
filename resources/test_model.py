@@ -3,14 +3,18 @@ from resources.build_model import BertClassifier
 from sklearn.metrics import classification_report
 
 
-def test_model(model, test_dataloader, BERT_MODEL_NAME, num_labels, label_columns):
+def test_model(test_dataloader, BERT_MODEL_NAME, num_labels, label_columns):
     # print("\nLoading saved model")
     # model = BertClassifier(
     #     num_labels=num_labels, BERT_MODEL_NAME=BERT_MODEL_NAME, freeze_bert=False
     # )
     # model_dir = "model/model.pt"
     # model.load_state_dict(torch.load(model_dir))
-
+    model_dir = "model/model.pt"
+    model = BertClassifier(
+        num_labels=num_labels, BERT_MODEL_NAME=BERT_MODEL_NAME, freeze_bert=False
+    )
+    model.load_state_dict(torch.load(model_dir))
     # Put model in evaluation mode
     model.eval()
 
