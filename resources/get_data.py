@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 
 
 def get_data():
-    df = pd.read_csv("data/train.csv")[:10]
+    df = pd.read_csv("data/train.csv")[:50]
     df["TEXT"] = df["TITLE"] + df["ABSTRACT"]
 
     label_columns = df.columns.tolist()[3:-1]

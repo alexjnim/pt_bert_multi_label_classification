@@ -49,19 +49,18 @@ trained_model, training_stats, train_loss_set = train_model(
     bert_classifier,
     train_dataloader,
     val_dataloader=val_dataloader,
-    epochs=10,
+    epochs=1,
     evaluation=True,
 )
 
-plot_results(training_stats, train_loss_set)
+# plot_results(training_stats, train_loss_set)
 
 ##################################
 #           test model
 ##################################
 
 test_model(
-    model=trained_model,
-    test_dataloader=train_dataloader,
+    test_dataloader=test_dataloader,
     BERT_MODEL_NAME=BERT_MODEL_NAME,
     num_labels=num_labels,
     label_columns=label_columns,
