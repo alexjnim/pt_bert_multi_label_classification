@@ -40,6 +40,8 @@ def train_model(
             # b_attention_mask, b_labels = tuple(t.to(device) for t in batch)
 
             model.zero_grad()
+            # i think this should be
+            optimizer.zero_grad()
 
             loss = model(
                 input_ids=b_input_ids,
